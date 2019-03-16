@@ -9,7 +9,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 {
     public static class FilterHelper
     {
-        public static QueryView SqlBuilder(View filters, string sql, bool isQueryDatatable = false)
+        public static QueryView SqlBuilder(View filters, string sql, string defaultOrderByColumnName, bool isQueryDatatable )
         {
             QueryView queryView = new QueryView();
             var sortExpression = "";

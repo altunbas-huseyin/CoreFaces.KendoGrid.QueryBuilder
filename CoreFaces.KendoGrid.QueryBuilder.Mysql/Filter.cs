@@ -25,10 +25,10 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
         { "lte", "{0} <= {1}" },
         { "gt", "{0} > {1}" },
         { "gte", "{0} >= {1}" },
-        { "startswith", "{0} like cast({1} as nvarchar(max)) +'%'" },
-        { "endswith", "{0} like '%'+cast({1} as nvarchar(max)) " },
-        { "contains", "{0} like '%'+cast({1} as nvarchar(max)) +'%'" },
-        { "doesnotcontain", "{0} not like '%'+cast({1} as nvarchar(max)) +'%'" },
+        { "startswith", "{0} like CONCAT({1}, '%')" },
+        { "endswith", "{0} like CONCAT('%', {1})" },
+        { "contains", "{0} like CONCAT('%', {1}, '%')" },
+        { "doesnotcontain", "{0} not like CONCAT('%', {1}, '%')" },
 
         { "eq_datatable", "{0} = {1}" },
         { "neq_datatable", "{0} <> {1}" },
@@ -88,8 +88,8 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
         public object Value { get; set; } = "";
 
 
-        [DataMember(Name = "sqlParameterName")]
-        public string SqlParameterName { get; set; } = "";
+        [DataMember(Name = "MySqlParameterName")]
+        public string MySqlParameterName { get; set; } = "";
 
         /// <summary>
         /// Gets the expression.
@@ -207,7 +207,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
             //        if (filters.ToList()[i].Filters.Where(p => p.Field == "created").Count() == 2)
             //        {
             //            filters.ToList()[i].Filters[1].Field = "created";
-            //            filters.ToList()[i].Filters[1].SqlParameterName = "created_1";
+            //            filters.ToList()[i].Filters[1].MySqlParameterName = "created_1";
             //        }
             //    }
 
@@ -217,14 +217,14 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
             List<Filter> tempFiltersCreate = filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "create").ToList();
             if (tempFiltersCreate.Count == 2)
             {
-                filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "create").ToList()[1].SqlParameterName = "created_1";
+                filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "create").ToList()[1].MySqlParameterName = "created_1";
             }
 
 
             List<Filter> tempFiltersDate = filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "date").ToList();
             if (tempFiltersDate.Count == 2)
             {
-                filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "date").ToList()[1].SqlParameterName = "date_1";
+                filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "date").ToList()[1].MySqlParameterName = "date_1";
             }
 
 
@@ -264,13 +264,14 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                 foreach (Filter _filter in filters)
                 {
                     Filter filter = _filter;
+                    filter = FilterInit(filter);
                     if (!string.IsNullOrWhiteSpace(filter.Field))
                     {
 
                         string template = Templates[filter.Operator];
                         string value = filter.Value.ToString();
-                        list.Add(string.Format(template, filter.Field, "@" + filter.SqlParameterName));
-                        listParams.Add(new MySqlParameter("@" + filter.SqlParameterName, value));
+                        list.Add(string.Format(template, filter.Field, "@" + filter.MySqlParameterName));
+                        listParams.Add(new MySqlParameter("@" + filter.MySqlParameterName, value));
                     }
 
                     //Reqursive Call
@@ -293,6 +294,75 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
             }
 
             return Tuple.Create(result, resultParams);
+        }
+
+        private Filter FilterInit(Filter filter)
+        {
+
+            if (!filter.MySqlParameterName.Contains("_1"))
+            {
+                filter.MySqlParameterName = filter.Field;
+            }
+            else
+            {
+                filter.Value = DateTime.Parse(filter.Value.ToString()).ToString("yyyy.MM.dd") + " 23:59:59:59";
+            }
+
+            if (filter.Field == "statusText")
+            {
+                filter.Field = "status";
+                filter.MySqlParameterName = filter.MySqlParameterName + "_1";
+
+                if (filter.Value.ToString() == "Yeni")
+                    filter.Value = 0;
+                else if (filter.Value.ToString() == "Aktif")
+                    filter.Value = 1;
+                else if (filter.Value.ToString() == "Pasif")
+                    filter.Value = 2;
+                else if (filter.Value.ToString() == "Onaylandı")
+                    filter.Value = 3;
+                else if (filter.Value.ToString() == "Reddedildi")
+                    filter.Value = 4;
+                else if (filter.Value.ToString() == "Onay Bekliyor")
+                    filter.Value = 5;
+            }
+
+            if (filter.Field == "userTypeText")
+            {
+                filter.Field = "userType";
+                filter.MySqlParameterName = filter.MySqlParameterName + "_1";
+
+                if (filter.Value.ToString() == "Bayi")
+                    filter.Value = 1;
+                else if (filter.Value.ToString() == "Toptancı")
+                    filter.Value = 2;
+                else if (filter.Value.ToString() == "Tali Bayi")
+                    filter.Value = 3;
+
+            }
+
+            if (filter.Field == "transactionTypeText")
+            {
+
+                filter.Field = "transactionType";
+                filter.MySqlParameterName = filter.MySqlParameterName + "_1";
+
+                if (filter.Value.ToString() == "Faturadan kazanılan puan.")
+                    filter.Value = 1;
+                else if (filter.Value.ToString() == "Fatura iptaline istinaden silinen puan.")
+                    filter.Value = 2;
+                else if (filter.Value.ToString() == "Eğitimden kazanılan puan.")
+                    filter.Value = 3;
+                else if (filter.Value.ToString() == "Manuel yüklenen puan.")
+                    filter.Value = 4;
+                else if (filter.Value.ToString() == "Manuel silinen puan.")
+                    filter.Value = 5;
+            }
+
+
+
+
+            return filter;
         }
 
         private string ConvertToCamelCase(string phrase)
