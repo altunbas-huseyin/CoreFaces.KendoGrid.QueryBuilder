@@ -264,7 +264,6 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                 foreach (Filter _filter in filters)
                 {
                     Filter filter = _filter;
-                    filter = FilterInit(filter);
                     if (!string.IsNullOrWhiteSpace(filter.Field))
                     {
 
@@ -294,75 +293,6 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
             }
 
             return Tuple.Create(result, resultParams);
-        }
-
-        private Filter FilterInit(Filter filter)
-        {
-
-            if (!filter.SqlParameterName.Contains("_1"))
-            {
-                filter.SqlParameterName = filter.Field;
-            }
-            else
-            {
-                filter.Value = DateTime.Parse(filter.Value.ToString()).ToString("yyyy.MM.dd") + " 23:59:59:59";
-            }
-
-            if (filter.Field == "statusText")
-            {
-                filter.Field = "status";
-                filter.SqlParameterName = filter.SqlParameterName + "_1";
-
-                if (filter.Value.ToString() == "Yeni")
-                    filter.Value = 0;
-                else if (filter.Value.ToString() == "Aktif")
-                    filter.Value = 1;
-                else if (filter.Value.ToString() == "Pasif")
-                    filter.Value = 2;
-                else if (filter.Value.ToString() == "Onaylandı")
-                    filter.Value = 3;
-                else if (filter.Value.ToString() == "Reddedildi")
-                    filter.Value = 4;
-                else if (filter.Value.ToString() == "Onay Bekliyor")
-                    filter.Value = 5;
-            }
-
-            if (filter.Field == "userTypeText")
-            {
-                filter.Field = "userType";
-                filter.SqlParameterName = filter.SqlParameterName + "_1";
-
-                if (filter.Value.ToString() == "Bayi")
-                    filter.Value = 1;
-                else if (filter.Value.ToString() == "Toptancı")
-                    filter.Value = 2;
-                else if (filter.Value.ToString() == "Tali Bayi")
-                    filter.Value = 3;
-
-            }
-
-            if (filter.Field == "transactionTypeText")
-            {
-
-                filter.Field = "transactionType";
-                filter.SqlParameterName = filter.SqlParameterName + "_1";
-
-                if (filter.Value.ToString() == "Faturadan kazanılan puan.")
-                    filter.Value = 1;
-                else if (filter.Value.ToString() == "Fatura iptaline istinaden silinen puan.")
-                    filter.Value = 2;
-                else if (filter.Value.ToString() == "Eğitimden kazanılan puan.")
-                    filter.Value = 3;
-                else if (filter.Value.ToString() == "Manuel yüklenen puan.")
-                    filter.Value = 4;
-                else if (filter.Value.ToString() == "Manuel silinen puan.")
-                    filter.Value = 5;
-            }
-
-
-
-
-            return filter;
         }
 
         private string ConvertToCamelCase(string phrase)
