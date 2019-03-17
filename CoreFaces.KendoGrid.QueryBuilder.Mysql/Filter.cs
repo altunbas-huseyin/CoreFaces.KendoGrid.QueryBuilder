@@ -29,6 +29,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
         { "endswith", "{0} like CONCAT('%', {1})" },
         { "contains", "{0} like CONCAT('%', {1}, '%')" },
         { "doesnotcontain", "{0} not like CONCAT('%', {1}, '%')" },
+        { "in", "{0} in ({1})" },
 
         { "eq_datatable", "{0} = {1}" },
         { "neq_datatable", "{0} <> {1}" },
@@ -270,8 +271,18 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 
                         string template = Templates[filter.Operator];
                         string value = filter.Value.ToString();
-                        list.Add(string.Format(template, filter.Field, "@" + filter.MySqlParameterName));
-                        listParams.Add(new MySqlParameter("@" + filter.MySqlParameterName, value));
+
+                        if (filter.Operator == "in")
+                        {
+                            list.Add(string.Format(template, filter.Field, value));
+                        }
+                        else
+                        {
+
+                            list.Add(string.Format(template, filter.Field, "@" + filter.MySqlParameterName));
+                            listParams.Add(new MySqlParameter("@" + filter.MySqlParameterName, value));
+                        }
+
                     }
 
                     //Reqursive Call
