@@ -9,7 +9,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 {
     public static class FilterHelper
     {
-        public static QueryView SqlBuilder(View filters, string sql, string defaultOrderByColumnName, bool isQueryDatatable )
+        public static QueryView SqlBuilder(View filters, string sql, string defaultOrderByColumnName, bool isQueryDatatable)
         {
             QueryView queryView = new QueryView();
             var sortExpression = "";
@@ -43,7 +43,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 
             if (sortExpression == "")
             {
-                sortExpression = "ORDER BY id DESC";
+                sortExpression = "ORDER BY " + defaultOrderByColumnName + " DESC";
             }
             else
             {
@@ -71,7 +71,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
             {
                 if (filters.Filter != null)
                 {
-                   
+
                 }
                 else
                 {
