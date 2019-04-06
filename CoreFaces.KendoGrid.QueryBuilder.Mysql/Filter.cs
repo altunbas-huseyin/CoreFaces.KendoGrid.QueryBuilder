@@ -297,7 +297,15 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                     }
                 }
 
-                result = "(" + string.Join(" " + logic + " ", list) + ")";
+                //result = "(" + string.Join(" " + logic + " ", list) + ")";
+               
+                for (int i = 1; i < list.Count; i++)
+                {
+                    Filter _filter = filters[i - 1];
+                    list[i] = _filter.Logic + " " + list[i];
+                }
+                result = "(" + string.Join(" ", list) + ")";
+
                 foreach (var item in listParams)
                 {
                     resultParams.Add(item);
