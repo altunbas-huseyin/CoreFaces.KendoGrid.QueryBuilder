@@ -68,7 +68,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
         /// The logic.
         /// </value>
         [DataMember(Name = "logic")]
-        public string Logic { get; set; }
+        public string Logic { get; set; } = "and";
 
         /// <summary>
         /// Gets or sets the operator.
