@@ -8,7 +8,23 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 {
     public class View
     {
-        public int Take { get; set; } = 20;
+        private int _Take;
+
+        public int Take
+        {
+            get
+            {
+                if (this.PageSize == 0)
+                    return int.MaxValue;
+                else
+                    return _Take;
+            }
+            set
+            {
+                _Take = value;
+            }
+        }
+
         public int Skip { get; set; }
         public List<Sort> Sort { get; set; }
         public Filter Filter { get; set; }
