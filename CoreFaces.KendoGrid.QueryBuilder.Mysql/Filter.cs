@@ -30,6 +30,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
         { "contains", "{0} like CONCAT('%', {1}, '%')" },
         { "doesnotcontain", "{0} not like CONCAT('%', {1}, '%')" },
         { "in", "{0} in ({1})" },
+        { "notin", "{0} not in ({1})" },
 
         { "eq_datatable", "{0} = {1}" },
         { "neq_datatable", "{0} <> {1}" },
@@ -228,6 +229,11 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                 filters.Where(p => p.Operator == "lte" || p.Operator == "gte" || p.Field == "date").ToList()[1].MySqlParameterName = "date_1";
             }
 
+            List<Filter> tempFiltersDeadline = filters.Where(p => p.Operator == "lt" || p.Operator == "gt" || p.Field == "deadline").ToList();
+            if (tempFiltersDeadline.Count == 2)
+            {
+                filters.Where(p => p.Operator == "lt" || p.Operator == "gt" || p.Field == "deadline").ToList()[1].MySqlParameterName = "deadline_1";
+            }
 
             foreach (Filter filter in filters)
             {
@@ -272,7 +278,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                         string template = Templates[filter.Operator];
                         string value = filter.Value.ToString();
 
-                        if (filter.Operator == "in")
+                        if (filter.Operator == "in" || filter.Operator == "notin")
                         {
                             list.Add(string.Format(template, filter.Field, value));
                         }
@@ -298,7 +304,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                 }
 
                 //result = "(" + string.Join(" " + logic + " ", list) + ")";
-               
+
                 for (int i = 1; i < list.Count; i++)
                 {
                     Filter _filter = filters[i - 1];
@@ -324,7 +330,15 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
             }
             else
             {
-                filter.Value = DateTime.Parse(filter.Value.ToString()).ToString("yyyy.MM.dd") + " 23:59:59:59";
+                try
+                {
+                    filter.Value = DateTime.Parse(filter.Value.ToString()).ToString("yyyy.MM.dd") + " 23:59:59:59";
+                }
+                catch (Exception)
+                {
+
+                    filter.Value = filter.Value;
+                }
             }
 
             if (filter.Field == "statusText")
