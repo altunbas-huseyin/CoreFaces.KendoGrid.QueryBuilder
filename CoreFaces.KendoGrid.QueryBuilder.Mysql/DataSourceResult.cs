@@ -46,5 +46,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                            .Where(t => t.Name.StartsWith("DynamicClass"))
                            .ToArray();
         }
+
+        public dynamic CustomData { get; set; }
     }
 }
