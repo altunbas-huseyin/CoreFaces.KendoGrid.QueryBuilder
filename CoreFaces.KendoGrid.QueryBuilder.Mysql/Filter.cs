@@ -99,10 +99,14 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
         /// <returns>
         /// The expression.
         /// </returns>
-        public Tuple<string, List<MySqlParameter>> GetExpression(bool isQueryDatatable)
+        public Tuple<string, List<MySqlParameter>> GetExpression(bool isQueryDatatable, List<string> duplicateFilterFixColumns)
         {
             var result = this.ExpressionInit(this.Filters);
-            result = this.FixDuplicateColumnFilter(result, "siparis_statu");
+            if (duplicateFilterFixColumns != null)
+                foreach (string column in duplicateFilterFixColumns)
+                {
+                    result = this.FixDuplicateColumnFilter(result, column);
+                }
             if (isQueryDatatable)
             { result = QueryDatatableOptimize(result); }
             return this.GetExpression(result, this.Logic);
@@ -271,24 +275,27 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
                 foreach (Filter _filter in filters)
                 {
                     Filter filter = _filter;
-                    filter = FilterInit(filter);
-                    if (!string.IsNullOrWhiteSpace(filter.Field))
+                    if (filter.Field != null)
                     {
-
-                        string template = Templates[filter.Operator];
-                        string value = filter.Value.ToString();
-
-                        if (filter.Operator == "in" || filter.Operator == "notin")
-                        {
-                            list.Add(string.Format(template, filter.Field, value));
-                        }
-                        else
+                        filter = FilterInit(filter);
+                        if (!string.IsNullOrWhiteSpace(filter.Field))
                         {
 
-                            list.Add(string.Format(template, filter.Field, "@" + filter.MySqlParameterName));
-                            listParams.Add(new MySqlParameter("@" + filter.MySqlParameterName, value));
-                        }
+                            string template = Templates[filter.Operator];
+                            string value = filter.Value.ToString();
 
+                            if (filter.Operator == "in" || filter.Operator == "notin")
+                            {
+                                list.Add(string.Format(template, filter.Field, value));
+                            }
+                            else
+                            {
+
+                                list.Add(string.Format(template, filter.Field, "@" + filter.MySqlParameterName));
+                                listParams.Add(new MySqlParameter("@" + filter.MySqlParameterName, value));
+                            }
+
+                        }
                     }
 
                     //Reqursive Call

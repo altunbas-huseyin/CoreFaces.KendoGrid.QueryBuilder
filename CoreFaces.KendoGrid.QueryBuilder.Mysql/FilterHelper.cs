@@ -9,7 +9,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 {
     public static class FilterHelper
     {
-        public static QueryView SqlBuilder(View filters, string sql, string defaultOrderByColumnName, bool isQueryDatatable)
+        public static QueryView SqlBuilder(View filters, string sql, string defaultOrderByColumnName, bool isQueryDatatable, List<string> duplicateFilterFixColumns = null)
         {
             QueryView queryView = new QueryView();
             var sortExpression = "";
@@ -24,7 +24,7 @@ namespace CoreFaces.KendoGrid.QueryBuilder.Mysql
 
             if (filters.Filter != null)
             {
-                tuppleWhere = filters.Filter.GetExpression(isQueryDatatable);
+                tuppleWhere = filters.Filter.GetExpression(isQueryDatatable, duplicateFilterFixColumns);
                 if (tuppleWhere.Item1 != "" && tuppleWhere.Item1 != null)
                 {
                     queryView.filterExpression = tuppleWhere.Item1;
